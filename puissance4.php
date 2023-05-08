@@ -9,14 +9,18 @@ declare(strict_types=1);
  * @link https://apiadept.com
  */
 
-defined('LIGNE') || define('LIGNE', 6);
-defined('COLONNE') || define('COLONNE', 7);
+defined('GRILLE_LIGNE') || define('GRILLE_LIGNE', 6);
+defined('GRILLE_COLONNE') || define('GRILLE_COLONNE', 7);
 
 defined('PION_ROUGE') || define('PION_ROUGE', "\033[31;1m@\033[0m");
 defined('PION_JAUNE') || define('PION_JAUNE', "\033[33;1m@\033[0m");
 
 // Le nombre de pions à aligner pour gagner la partie
-defined('ALIGNE') || define('ALIGNE', 4);
+defined('PION_ALIGNES') || define('PION_ALIGNES', 4);
+
+// Lab
+defined('NB_COUP_MINIMAL_JOUEUR_2_GAGNE') || define('NB_COUP_MINIMAL_JOUEUR_2_GAGNE', 9);
+defined('TOLERANCE_ERREUR_EN_POURCENTAGE') || define('TOLERANCE_ERREUR_EN_POURCENTAGE', (float)($_SERVER['TOLERANCE_ERREUR'] ?? 0.01));
 
 /**
  *
@@ -147,10 +151,10 @@ function estPartieTerminee(array $tab, int $nombreCoup): bool
     for ($h = 5; $h >= 0; --$h) {
         for ($c = 0; $c <= 6; ++$c) {
 
-            $hz = verifierAlignement($h, $c, 0, 1, ALIGNE, $couleur, $tab);
-            $vt = verifierAlignement($h, $c, 1, 0, ALIGNE, $couleur, $tab);
-            $d1 = verifierAlignement($h, $c, 1, 1, ALIGNE, $couleur, $tab);
-            $d2 = verifierAlignement($h, $c, 1, -1, ALIGNE, $couleur, $tab);
+            $hz = verifierAlignement($h, $c, 0, 1, PION_ALIGNES, $couleur, $tab);
+            $vt = verifierAlignement($h, $c, 1, 0, PION_ALIGNES, $couleur, $tab);
+            $d1 = verifierAlignement($h, $c, 1, 1, PION_ALIGNES, $couleur, $tab);
+            $d2 = verifierAlignement($h, $c, 1, -1, PION_ALIGNES, $couleur, $tab);
 
             if ($hz || $vt || $d1 || $d2) {
                 return true;
@@ -173,15 +177,15 @@ function estPartieTerminee(array $tab, int $nombreCoup): bool
  */
 function verifierAlignement(int $r0, int $c0, int $dr, int $dc, int $len, int $num, array $tab): bool
 {
-    for ($k = 0; $k < $len; $k++) {
-        $r = $r0 + $k * $dr;
-        $c = $c0 + $k * $dc;
-        if (($r < 0) || ($c < 0) || ($r >= LIGNE) || ($c >= COLONNE) || ($num !== $tab[$r][$c])) {
+    for ($k = 0; $k < $len; ++$k) {
+        $r = $r0 + ($k * $dr);
+        $c = $c0 + ($k * $dc);
+        if (($r < 0) || ($c < 0) || ($r >= GRILLE_LIGNE) || ($c >= GRILLE_COLONNE) || ($num !== $tab[$r][$c])) {
             return false;
         }
     }
 
-    return true;
+    return ($len === PION_ALIGNES);
 }
 
 /**
@@ -191,9 +195,9 @@ function verifierAlignement(int $r0, int $c0, int $dr, int $dc, int $len, int $n
 function dessinePlateau(array $tab): void
 {
     printf("\n");
-    $i = LIGNE;
+    $i = GRILLE_LIGNE;
     while ($i-- > 0) {
-        for ($j = 0; $j < COLONNE; $j++) {
+        for ($j = 0; $j < GRILLE_COLONNE; $j++) {
             printf('¦  ');
             if ($tab[$i][$j] == _Case::ROUGE->value) {
                 printf(PION_ROUGE);
@@ -205,12 +209,12 @@ function dessinePlateau(array $tab): void
             printf('  ');
         }
         printf("¦\n");
-        for ($j = 0; $j < COLONNE; $j++) {
+        for ($j = 0; $j < GRILLE_COLONNE; $j++) {
             printf('+-----');
         }
         printf("+\n");
     }
-    for ($j = 1; $j <= COLONNE; $j++) {
+    for ($j = 1; $j <= GRILLE_COLONNE; $j++) {
         printf('   %d  ', $j);
     }
     printf("\n");
@@ -227,7 +231,7 @@ function jouerCoup(array &$tab, int $num_col, int $pion): int
     $l = 0;
     $trouve = 0;
 //  $num_col--;
-    while (!$trouve && ($l < LIGNE)) {
+    while (!$trouve && ($l < GRILLE_LIGNE)) {
         $trouve = ($tab[$l][$num_col] == _Case::VIDE->value);
         if ($trouve) {
             $tab[$l][$num_col] = $pion;
@@ -249,7 +253,7 @@ function jouerCoup(array &$tab, int $num_col, int $pion): int
 function afficheStatistiquesJoueur(Joueur $joueur): void
 {
     $niveauString = 'FACILE';
-    switch ($joueur->niveau) {
+    switch ($joueur->niveau->value) {
         case Niv::FACILE->value:
             $niveauString = 'FACILE';
             break;
@@ -261,7 +265,7 @@ function afficheStatistiquesJoueur(Joueur $joueur): void
             break;
     }
 
-    printf("\033[37;40m Statisique de %s - Niveau %s : \033[0m \n", $joueur->nom, $niveauString);
+    printf("\033[37;40m Statistique de %s - Niveau %s : \033[0m \n", $joueur->nom, $niveauString);
     printf("Partie faciles Jouées    : %02d | Gagnées : %02d \n", $joueur->nb_joue[Niv::FACILE->value], $joueur->win[Niv::FACILE->value]);
     printf("Parie normales Jouées    : %02d | Gagnées : %02d \n", $joueur->nb_joue[Niv::NORMAL->value], $joueur->win[Niv::NORMAL->value]);
     printf("Partie difficiles Jouées : %02d | Gagnées : %02d\n", $joueur->nb_joue[Niv::DIFFICILE->value], $joueur->win[Niv::DIFFICILE->value]);
@@ -297,7 +301,7 @@ function main(): void
             $nbCoup = 0;
 
 
-            while (!$partieTerminee && ($nbCoup < COLONNE * LIGNE)) {
+            while (!$partieTerminee && ($nbCoup < GRILLE_COLONNE * GRILLE_LIGNE)) {
                 // Choix  - $colonne joueur
                 $colonneJoue = -1;
                 // mode_raw(1);
@@ -377,6 +381,7 @@ function main(): void
 function aleatoire(): void
 {
     $quitter = 'Q';
+    $rejouer = 'O';
 
     while ($quitter != 'C') {
         $dateDebutPartie = (new DateTimeImmutable('now', new DateTimeZone('America/Martinique')))->format('Y-m-d\TH:iP');
@@ -387,8 +392,6 @@ function aleatoire(): void
         printf("Entrez les informations du joueur 2 (JAUNE) : \n");
         $joueur2 = nouveauJoueur('robot-2', 'D');
 
-
-        $rejouer = 'O';
 
         while ($rejouer == 'O') {
             afficheStatistiquesJoueur($joueur1);
@@ -405,7 +408,7 @@ function aleatoire(): void
             $nbCoup = 0;
 
 
-            while (!$partieTerminee && ($nbCoup < COLONNE * LIGNE)) {
+            while (!$partieTerminee && ($nbCoup < GRILLE_COLONNE * GRILLE_LIGNE)) {
                 // Choix  - $colonne joueur
                 $colonneJoue = -1;
                 // mode_raw(1);
@@ -427,10 +430,12 @@ function aleatoire(): void
                     $colonneJoue--;
 
                     // Joue le coup
-                    $hauteurPion = jouerCoup($grille, $colonneJoue, (($nbCoup % 2) == 0) ? _Case::ROUGE->value : _Case::JAUNE->value);
+                    $pionActuel = (($nbCoup % 2) == 0) ? _Case::ROUGE->value : _Case::JAUNE->value;
+                    $hauteurPion = jouerCoup($grille, $colonneJoue, $pionActuel);
                     if ($hauteurPion == -1) {
                         printf("Coup impossible!!!\n");
                     } else {
+                        file_put_contents(sprintf('puissance-4-joueur-%d-actuel-nbcoup-%d-colonne-%d-date-%s.txt', $pionActuel, $nbCoup, $colonneJoue, $dateDebutPartie), serialize($grille));
                         $nbCoup++;
                     }
                 }
@@ -448,12 +453,10 @@ function aleatoire(): void
 
             if (!$partieTerminee) {
                 printf('EGALITE');
-                file_put_contents(sprintf('puissance-4-egalite-nbcoup-%d-date-%s.txt', $nbCoup, $dateDebutPartie), serialize($grille));
             } else {
                 if ($nbCoup % 2 == 0) {
                     printf("Les ROUGES ont gagnés\n");
                     $joueur1->win[$joueur2->niveau->value]++;
-                    file_put_contents(sprintf('puissance-4-joueur-1-gagne-nbcoup-%d-date-%s.txt', $nbCoup, $dateDebutPartie), serialize($grille));
                 } else {
                     printf("Les JAUNES ont gagnés\n");
                     $joueur2->win[$joueur1->niveau->value]++;
@@ -468,23 +471,46 @@ function aleatoire(): void
             printf("Rejouer (O/N)\n");
             $victoiresJoueur2 = glob("puissance-4-joueur-2-gagne-*.txt");
 
-            // Rejouer tant que joueur 2 ne gagne pas avec un nombre de coup minimal
-            $rejouer = (count($victoiresJoueur2) == ($nbCoup % 8)) ? 'N' : 'O';
+            // Rejouer tant que joueur 2 ne gagne pas avec un nombre de coup minimal ou coup gagnant
+            $rejouer = count(array_values(array_filter(
+                $victoiresJoueur2,
+                function ($v) {
+                    // Si valeur tolerance erreur est invalide, ne pas prendre en compte l'element en cours
+                    if ((TOLERANCE_ERREUR_EN_POURCENTAGE < 0) || (TOLERANCE_ERREUR_EN_POURCENTAGE > 0.999)) {
+                        return false;
+                    }
+
+                    $sortie = preg_match('#puissance\-4\-joueur\-2\-gagne\-nbcoup\-(\d{1,2})#', $v, $out) > 0;
+                    if (!$sortie) {
+                        return false;
+                    }
+
+                    // Le joueur 2 gagne dans le meilleur des cas en 9 coups minimum (coup 0 c'est le joueur 1)
+                    // 0 à 8 (4 pions rouges + 4 pions jaunes) les rouges font une erreur au coup numéro 7
+                    // cela donne une opportunité au pions jaunes de gagner en un minimum de 9 coups
+
+                    return (
+                        ($out[1] % 2 === 1)
+                        && (
+                            (NB_COUP_MINIMAL_JOUEUR_2_GAGNE <= $out[1])
+                            && ($out[1] < (NB_COUP_MINIMAL_JOUEUR_2_GAGNE * (1 + TOLERANCE_ERREUR_EN_POURCENTAGE)))
+                        )
+                    );
+                }
+            ))) ? 'N' : 'O';
         }
 
         printf("Quitter ou Continuer (Q/C)\n");
-        $egalites = glob("puissance-4-egalite-*.txt");
-        $victoiresJoueur1 = glob("puissance-4-joueur-1-gagne-*.txt");
-        $victoiresJoueur2 = glob("puissance-4-joueur-2-gagne-*.txt");
 
-        // Tant que le joueur 2 ne gagne pas plus souvent que le joueur 1
-        $quitter = (count($egalites) > count($victoiresJoueur2) || count($victoiresJoueur2) < count($victoiresJoueur1)) ? 'Q' : 'C';
+        // Tant que le joueur 2 ne gagne pas recommencer sinon quitter
+        $quitter = ($rejouer == 'N') ? 'C' : 'Q';
     }
 
     exit(0);
 }
 
-function web () {
+function web()
+{
     echo 'Pas encore créé' . PHP_EOL;
     exit(0);
 }
@@ -505,7 +531,7 @@ switch ($_SERVER['MODE_DE_JEU']) {
         echo 'Préciser la grille a importer grâce à la variable d\'environement GRILLE_JEU' . PHP_EOL;
         $fichier = (!empty($_SERVER['GRILLE_JEU']) && is_file($_SERVER['GRILLE_JEU']) && (filesize($_SERVER['GRILLE_JEU']) > 0)) ? $_SERVER['GRILLE_JEU'] : '';
         if (empty($fichier)) {
-            echo 'Impossible importer partie. Fichier specifié a un problème ou n\'existe pas'. PHP_EOL;
+            echo 'Impossible importer partie. Fichier specifié a un problème ou n\'existe pas' . PHP_EOL;
             exit(1);
         }
         // Afficher grille importée ou grille vide du commencement de la partie

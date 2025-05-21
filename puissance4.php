@@ -15,30 +15,37 @@ defined('GRILLE_COLONNE') || define('GRILLE_COLONNE', 7);
 defined('PION_ROUGE') || define('PION_ROUGE', "\033[31;1m@\033[0m");
 defined('PION_JAUNE') || define('PION_JAUNE', "\033[33;1m@\033[0m");
 
-// Le nombre de pions à aligner pour gagner la partie
+// Fr: Le nombre de pions à aligner pour gagner la partie
+// En: How many piece to align to win the game
 defined('PION_ALIGNES') || define('PION_ALIGNES', 4);
 
-// Lab
+// Fr: Lab: Essayer avec un nombre minimal de coups à jouer pour le joueur 2
+// En: Lab: Try with a minimal plies to play for the player 2
 defined('NB_COUP_MINIMAL_JOUEUR_2_GAGNE') || define('NB_COUP_MINIMAL_JOUEUR_2_GAGNE', 9);
 
-// Tolérance entre 0 et 0.999 (0 veut dire que le joueur 2
+// Fr: Tolérance entre 0 et 0.999 (0 veut dire que le joueur 2 a gagné TOUTES les parties jouées)
+// En; Tolerance between 0 and 0.999 (0 means that the player 2 won ALL games it played)
 defined('TOLERANCE') || define('TOLERANCE', (float)($_SERVER['TOLERANCE'] ?? 0.01));
 
-// Maximum de parties jouées pour "entrainer" l'algorithme simplifié d'apprentissage automatique supervisé (choisir de préférence un multiple de 2)
+// Fr: Maximum de parties jouées pour "entrainer" l'algorithme simplifié d'apprentissage automatique supervisé (choisir de préférence un multiple de 2)
+// En: Maximum games to play to "train" the simplified algorithm of supervised learning (preferably choose a number that is a power of 2)
 defined('MAX_ECHANTILLONS') || define('MAX_ECHANTILLONS', (int)($_SERVER['MAX_ECHANTILLONS'] ?? 2048));
 
-// Pour que ce soit compatible avec les anciennes versions de PHP au lieu d'utiliser les enums (pas strictement equivalent mais bon)
+// Fr: Pour que ce soit compatible avec les anciennes versions de PHP au lieu d'utiliser les enums (pas strictement equivalent mais bon)
+// En: This is done to be compatible with older versions of PHP instead of using enums (not strictly equivalent but you get the idea)
 defined('CASE_ROUGE') || define('CASE_ROUGE', 1);
 defined('CASE_JAUNE') || define('CASE_JAUNE', 2);
 defined('CASE_VIDE') || define('CASE_VIDE', 0);
 
-// Même raison que pour les cases
+// Fr: Même raison que pour les niveaux de difficulté du jeu
+// En: Same reason than above but for difficulty level of the game
 defined('NIV_FACILE') || define('NIV_FACILE', 'F');
 defined('NIV_NORMAL') || define('NIV_NORMAL', 'M');
 defined('NIV_DIFFICILE') || define('NIV_DIFFICILE', 'D');
 
 /**
- * DTO representant un joueur.euse. (struct dans le code originel en C)
+ * Fr: DTO representant un joueur.euse. (struct dans le code originel en C)
+ * En: DTO representing a gamer (struct in the original source code in C)
  */
 class Joueur
 {
@@ -50,6 +57,8 @@ class Joueur
 
 
 /**
+ * Fr: Initialiser la grille de jeu
+ * En: Initialise game board
  * @return array
  */
 function commencement(): array
@@ -65,6 +74,9 @@ function commencement(): array
 }
 
 /**
+ * Fr: Remplir vos infos minimales de joueur.euse (nom, niveau de difficulté)
+ * En: Fill out your minimal gamer info (name, difficulty level)
+ *
  * @param string|null $votreNomJoueur
  * @param string|null $votreNiveauJoueur
  * @return Joueur
@@ -124,6 +136,8 @@ function nouveauJoueur(?string $votreNomJoueur = null, ?string $votreNiveauJoueu
 }
 
 /**
+ * Fr: Detecter la fin du jeu
+ * En: Detect end of the game
  * @param array $tab
  * @param int $nombreCoup
  * @return bool
@@ -150,6 +164,9 @@ function estPartieTerminee(array $tab, int $nombreCoup): bool
 }
 
 /**
+ * Fr: Algorithme detection alignement basé sur les règles du jeu Puissance 4
+ * En: Alignment detection algorithm based on Connect 4 game rules
+ *
  * @param int $r0
  * @param int $c0
  * @param int $dr
@@ -169,11 +186,15 @@ function verifierAlignement(int $r0, int $c0, int $dr, int $dc, int $len, int $n
         }
     }
 
-    // k doit être exactement égal à PION_ALIGNES
+    // Fr: k doit être exactement égal à PION_ALIGNES (nombre de pions alignes de meme couleur)
+    // En: K must be exactly equal to PION_ALIGNES ( number of aligned pieces same color)
     return ($k === PION_ALIGNES);
 }
 
 /**
+ * Fr: Dessine la grille de jeu
+ * En:  Renders the game board
+ *
  * @param array $tab
  * @return void
  */
@@ -206,6 +227,9 @@ function dessinePlateau(array $tab): void
 }
 
 /**
+ * Fr: Jouer un coup quand c'est à votre tour
+ * En: Play a ply when it's your turn
+ *
  * @param array $tab
  * @param int $num_col
  * @param int $pion
@@ -232,6 +256,9 @@ function jouerCoup(array &$tab, int $num_col, int $pion): int
 }
 
 /**
+ * Fr: Affiche statistiques joueur.euse
+ * En: Display gamer stats
+ *
  * @param Joueur $joueur
  * @return void
  */
@@ -258,6 +285,9 @@ function afficheStatistiquesJoueur(Joueur $joueur): void
 }
 
 /**
+ * Fr: Programme principal
+ * En: Main program
+ *
  * @return void
  * @throws Exception
  */
@@ -266,23 +296,33 @@ function main(): void
     $rejouer = 'O';
 
     do {
+        // En: Enter Player 1 (RED) information
         printf("Entrez les informations du joueur 1 (ROUGE) : \n");
         $joueur1 = nouveauJoueur();
         printf("\n\n");
+
+        // En: Enter Player 2 (YELLOW) information
         printf("Entrez les informations du joueur 2 (JAUNE) : \n");
         $joueur2 = nouveauJoueur();
 
         while ($rejouer == 'O') {
+            // Fr: Horodatage debut partie
+            // En: Start game datetime
             $dateDebutPartie = gmdate(DateTimeInterface::RFC3339);
 
+            // En: Player 1 game stats
             afficheStatistiquesJoueur($joueur1);
+
+            // En: Player 2 game stats
             afficheStatistiquesJoueur($joueur2);
             $rejouer = false;
-            // Initialiser la nouvelle grille
+            // Fr: Initialiser la nouvelle grille
+            // En: Initialise new game
             $grille = commencement();
 
 
-            //Afficher le grille
+            // Fr: Afficher le grille
+            // En: Render game board
             dessinePlateau($grille);
 
             $partieTerminee = false;
@@ -298,11 +338,15 @@ function main(): void
 
                     while ($colonneJoue < 1 || $colonneJoue > 7) {
                         if (($nbCoup % 2) == 0) {
+                            // En: RED turn to play
                             printf("\033[1;41;30m A %s en ROUGE de jouer\033[0m \n", $joueur1->nom);
                         } else {
+                            // En: YELLOW turn to play
                             printf("\033[1;43;30m A %s JAUNE de jouer \033[0m \n", $joueur2->nom);
                         }
 
+                        // Fr: Tapez un nombre entre 1 et 7 (numéro de colonne de gauche à droite) pour jouer
+                        // En: Type a number between 1 and 7 (column number from left to right) to play
                         printf("Tapez une touche entre 1 et 7 :\n");
                         fscanf(STDIN, '%d', $colonneJoue);
                     }
@@ -310,20 +354,24 @@ function main(): void
                     // mode_raw(0);
                     $colonneJoue--;
 
-                    // Joue le coup
+                    // Fr: Joue le coup
+                    // En: Play the ply
                     $hauteurPion = jouerCoup($grille, $colonneJoue, (($nbCoup % 2) == 0) ? CASE_ROUGE : CASE_JAUNE);
                     if ($hauteurPion == -1) {
+                        // En: Invalid move
                         printf("Coup impossible!!!\n");
                     } else {
                         $nbCoup++;
                     }
                 }
 
-                // Affiche la grille
+                // Fr: Affiche la grille
+                // En: Render the game board
                 dessinePlateau($grille);
 
 
-                // La partie est-elle terminée ?
+                // Fr: La partie est-elle terminée ?
+                // En: Is the game over?
                 if (estPartieTerminee($grille, $nbCoup)) {
                     $partieTerminee = true;
                 }
@@ -331,14 +379,17 @@ function main(): void
             }
 
             if (!$partieTerminee) {
+                // En: Tie game / no winner
                 printf('EGALITE');
                 file_put_contents(sprintf('puissance-4-main-egalite-nbcoup-%d-date-%s.txt', $nbCoup, $dateDebutPartie), serialize($grille));
             } else {
                 if ($nbCoup % 2 == 0) {
+                    // En: RED wins the game
                     printf("Les ROUGES ont gagnés\n");
                     $joueur1->win[$joueur2->niveau]++;
                     file_put_contents(sprintf('puissance-4-main-joueur-1-gagne-nbcoup-%d-date-%s.txt', $nbCoup, $dateDebutPartie), serialize($grille));
                 } else {
+                    // En: YELLOW wins the game
                     printf("Les JAUNES ont gagnés\n");
                     $joueur2->win[$joueur1->niveau]++;
                     file_put_contents(sprintf('puissance-4-main-joueur-2-gagne-nbcoup-%d-date-%s.txt', $nbCoup, $dateDebutPartie), serialize($grille));
@@ -349,6 +400,7 @@ function main(): void
 // Demander si les joueurs veulent rejouer $i
 // 79 N
 // 78 O
+            // En: Retry? Type the letter O if yes or the letter N if no
             printf("Rejouer (O/N)\n");
             while ($rejouer != 'O' && $rejouer != 'N') {
                 fscanf(STDIN, '%s', $rejouer);
@@ -361,7 +413,8 @@ function main(): void
 }
 
 /**
- * Mode aléatoire (algorithme apprentissage automatique supervisé)
+ * Fr: Mode aléatoire (algorithme apprentissage automatique supervisé). Pareil qu'avant mais au lieu des humains ce sont des algos qui tournent
+ * En: Random mode (Automated supervised learning algorithm). Basically everything is the same then normal run but with 2 automated gamers rather than humans
  *
  * @return void
  * @throws Exception
@@ -371,9 +424,12 @@ function aleatoire(): void
     $rejouer = 'O';
 
     do {
+        // En: RED player 1 infos
         printf("Entrez les informations du joueur 1 (ROUGE) : \n");
         $joueur1 = nouveauJoueur('robot-1', 'D');
         printf("\n\n");
+
+        // En: YELLOW player 2 infos
         printf("Entrez les informations du joueur 2 (JAUNE) : \n");
         $joueur2 = nouveauJoueur('robot-2', 'D');
 
@@ -458,7 +514,8 @@ function aleatoire(): void
 // 78 O
             printf("Rejouer (O/N)\n");
 
-            // Tolérance 0 veut dire que le joueur 2 à GAGNÉ TOUTES les parties jouées.
+            // Fr: IMPORTANT: Le biais qui force l'algo à tendre vers une "excellence" tolérance 0 veut dire que le joueur 2 à GAGNÉ TOUTES les parties jouées.
+            // En: IMPORTANT: This is the bias that forces the algo to tend to "excellence" tolerance 0 means that player 2 WON ALL the games it played
             $valeur = ($joueur2->win[$joueur1->niveau] / $joueur2->nb_joue[$joueur1->niveau]);
             $rejouer = (($nbCoup % 2 === 1)
                 && ($nbCoup === NB_COUP_MINIMAL_JOUEUR_2_GAGNE)
@@ -468,7 +525,8 @@ function aleatoire(): void
                 && ((($valeur * (1 - TOLERANCE)) <= $valeur) && ($valeur <= (1 + TOLERANCE)))
             ) ? 'N' : 'O';
         }
-        // Tant que le joueur 2 ne gagne pas recommencer sinon quitter
+        // Fr: Tant que le joueur 2 ne gagne pas recommencer sinon quitter
+        // En: While player 2 lose a game retry, otherwise quit
     } while ($rejouer != 'N');
 
     afficheStatistiquesJoueur($joueur1);
@@ -478,6 +536,9 @@ function aleatoire(): void
 }
 
 /**
+ * Fr: Affichage en mode web pas encore implémenté
+ * En: Web renderer not implemented yet
+ *
  * @return void
  */
 function web()
@@ -486,21 +547,31 @@ function web()
     exit(0);
 }
 
+// Fr: Si aucun mode de jeu choisi, faire le comportement par défaut
+// En: If no game mode chosen. Run defaut routine
 if (!($_SERVER['MODE_DE_JEU'] ?? false)) {
     main();
     return;
 }
 
+// Fr: Modes de jeu
+// En: Game modes
 switch ($_SERVER['MODE_DE_JEU']) {
+    // Fr: Algo apprentissage supervisé optimisé pour que le joueur 2 gagne à Puissance 4 en un minimum de coups possibles
+    // En: Supervised learning algo to maximise player 2 winning the game in Connect 4 in minimum plies possible
     case 'aleatoire':
         try {
             aleatoire();
         } catch (Exception $e) {
         }
         break;
+    // Fr: Affichage en mode web pas encore implémenté
+    // En: Render in a web page not implemented yet
     case 'web':
         web();
         break;
+    // Fr: Importer votre grille de jeu
+    // En: Import your game board data
     case 'importer':
         echo 'Préciser la grille a importer grâce à la variable d\'environement GRILLE_JEU' . PHP_EOL;
         $fichier = (!empty($_SERVER['GRILLE_JEU']) && is_file($_SERVER['GRILLE_JEU']) && (filesize($_SERVER['GRILLE_JEU']) > 0)) ? $_SERVER['GRILLE_JEU'] : '';
@@ -511,6 +582,8 @@ switch ($_SERVER['MODE_DE_JEU']) {
         // Afficher grille importée ou grille vide du commencement de la partie
         dessinePlateau(unserialize(file_get_contents($fichier)) ?? commencement());
         break;
+    // Fr: Mode par défaut
+    // En: Default mode
     default:
         main();
 }

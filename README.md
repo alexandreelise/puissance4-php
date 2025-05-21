@@ -26,7 +26,8 @@ En Français:
 ----
 
 > Portage en PHP de la version du jeu Puissance 4 codé en C par un
-> ami: [Yannick LAVALLIÈRE](https://github.com/LAVALLIERE) dans son projet https://github.com/LAVALLIERE/puissance4-c.git
+> ami: [Yannick LAVALLIÈRE](https://github.com/LAVALLIERE) dans son
+> projet https://github.com/LAVALLIERE/puissance4-c.git
 
 ## Pré-requis:
 
@@ -48,6 +49,49 @@ git clone https://github.com/alexandreelise/puissance4-php.git \
 
 Cela va exécuter le jeu en mode cli. Pour plus de modes de jeu, je vous invite à lire le code source. Vous y trouverez
 des fonctionnalités cachées. ;-)
+
+> MODES DE JEU :
+
+- aleatoire
+- web
+- importer
+- default
+
+> MODE DE JEU : aleatoire
+> Fr : Algo apprentissage supervisé optimisé pour que le joueur 2 gagne à Puissance 4 en un minimum de coups possibles
+
+```
+
+MODE_DE_JEU=aleatoire php puissance4.php
+
+```
+
+> GAME MODE : web
+> Fr : Affichage en mode web pas encore implémenté
+
+```
+
+MODE_DE_JEU=web php puissance4.php
+
+```
+
+> GAME MODE : importer
+> Fr : Importer votre grille de jeu
+
+```
+
+MODE_DE_JEU=importer GRILLE_JEU=import-jeu.txt php puissance4.php
+
+```
+
+> GAME MODE : default
+> Fr : Par défaut
+
+```
+
+php puissance4.php
+
+```
 
 ----
 
@@ -79,3 +123,46 @@ git clone https://github.com/alexandreelise/puissance4-php.git \
 ```
 
 This will execute the cli game mode. For more game modes I invite you to read the code. You'll find hidden features. ;-)
+
+> GAME MODES
+
+- aleatoire
+- web
+- importer
+- default
+
+> GAME MODE : aleatoire
+> En: Supervised learning algo to maximise player 2 winning the game in Connect 4 in minimum plies possible
+
+```
+
+MODE_DE_JEU=aleatoire php puissance4.php
+
+```
+
+> GAME MODE : web
+> En: Render in a web page not implemented yet
+
+```
+
+MODE_DE_JEU=web php puissance4.php
+
+```
+
+> GAME MODE : importer
+> En: Import your game board data
+
+```
+
+MODE_DE_JEU=importer GRILLE_JEU=game-import.txt php puissance4.php
+
+```
+
+> GAME MODE : default
+> En: Default
+
+```
+
+php puissance4.php
+
+```

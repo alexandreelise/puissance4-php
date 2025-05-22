@@ -30,7 +30,10 @@ defined('TOLERANCE') || define('TOLERANCE', max(0.0, min(1.0, (float)($_SERVER['
 
 // Fr: Maximum de parties jouées pour "entrainer" l'algorithme simplifié d'apprentissage automatique supervisé (choisir de préférence un multiple de 2)
 // En: Maximum games to play to "train" the simplified algorithm of supervised learning (preferably choose a number that is a power of 2)
-defined('MAX_ECHANTILLONS') || define('MAX_ECHANTILLONS', max(24, min(2048, (int)($_SERVER['MAX_ECHANTILLONS'] ?? 2048))));
+defined('MAX_ECHANTILLONS') || define(
+    'MAX_ECHANTILLONS',
+    max(2, min(2048, (int)($_SERVER['MAX_ECHANTILLONS'] ?? 2048))),
+);
 
 // Fr: Pour que ce soit compatible avec les anciennes versions de PHP au lieu d'utiliser les enums (pas strictement equivalent mais bon)
 // En: This is done to be compatible with older versions of PHP instead of using enums (not strictly equivalent but you get the idea)
@@ -292,7 +295,7 @@ function afficheStatistiquesJoueur(Joueur $joueur): void
         $joueur->win[NIV_FACILE],
     );
     printf(
-        "Parie normales Jouées    : %02d | Gagnées : %02d \n",
+        "Partie normales Jouées    : %02d | Gagnées : %02d \n",
         $joueur->nb_joue[NIV_NORMAL],
         $joueur->win[NIV_NORMAL],
     );
@@ -446,6 +449,10 @@ function main(): void
  */
 function aleatoire(): void
 {
+    // En: How many games were played?
+    $nbPartieJouees = 0;
+
+    // En: Retry?
     $rejouer = 'O';
 
     do {
@@ -458,7 +465,7 @@ function aleatoire(): void
         printf("Entrez les informations du joueur 2 (JAUNE) : \n");
         $joueur2 = nouveauJoueur('robot-2', 'D');
 
-        while ($rejouer == 'O') {
+        do {
             $dateDebutPartie = gmdate(DateTimeInterface::RFC3339);
             afficheStatistiquesJoueur($joueur1);
             afficheStatistiquesJoueur($joueur2);
@@ -503,6 +510,8 @@ function aleatoire(): void
                     if ($hauteurPion == -1) {
                         printf("Coup impossible!!!\n");
                     } else {
+                        // Fr: Sauvegarder état grille actuel dans un fichier texte. Pour pouvoir plus tard importer
+                        // En: Save current board state in a text file. So we can later import it
                         file_put_contents(
                             sprintf(
                                 'puissance-4-joueur-%d-actuel-nbcoup-%d-colonne-%d-date-%s.txt',
@@ -525,15 +534,23 @@ function aleatoire(): void
                 $partieTerminee = estPartieTerminee($grille, $nbCoup);
             }
 
+            if ($nbPartieJouees < MAX_ECHANTILLONS) {
+                ++$nbPartieJouees;
+            } else {
+                $rejouer = 'N';
+                break;
+            }
             if (!$partieTerminee) {
                 printf('EGALITE');
+                 ++$joueur1->win[$joueur2->niveau]; // En: Add point to RED player
+                 ++$joueur2->win[$joueur1->niveau]; // En: Add point to YELLOW players
             } else {
                 if ($nbCoup % 2 == 0) {
                     printf("Les ROUGES ont gagnés\n");
-                    $joueur1->win[$joueur2->niveau]++;
+                    ++$joueur1->win[$joueur2->niveau];
                 } else {
                     printf("Les JAUNES ont gagnés\n");
-                    $joueur2->win[$joueur1->niveau]++;
+                    ++$joueur2->win[$joueur1->niveau];
                     file_put_contents(
                         sprintf(
                             'puissance-4-aleatoire-joueur-2-gagne-nbcoup-%d-date-%s.txt',
@@ -543,8 +560,8 @@ function aleatoire(): void
                         serialize($grille),
                     );
                 }
-                $joueur1->nb_joue[$joueur2->niveau]++;
-                $joueur2->nb_joue[$joueur1->niveau]++;
+                ++$joueur1->nb_joue[$joueur2->niveau];
+                ++$joueur2->nb_joue[$joueur1->niveau];
             }
 
 // Demander si les joueurs veulent rejouer $i
@@ -555,14 +572,20 @@ function aleatoire(): void
             // Fr: IMPORTANT: Le biais qui force l'algo à tendre vers une "excellence" tolérance 0 veut dire que le joueur 2 à GAGNÉ TOUTES les parties jouées.
             // En: IMPORTANT: This is the bias that forces the algo to tend to "excellence" tolerance 0 means that player 2 WON ALL the games it played
             $valeur  = ($joueur2->win[$joueur1->niveau] / $joueur2->nb_joue[$joueur1->niveau]);
-            $rejouer = (($nbCoup % 2 === 1)
-                && ($nbCoup === NB_COUP_MINIMAL_JOUEUR_2_GAGNE)
-                && ((TOLERANCE >= 0.0) && (TOLERANCE <= 1.0))
-                && ($joueur2->nb_joue[$joueur1->niveau] > 0)
-                && ($joueur2->nb_joue[$joueur1->niveau] <= MAX_ECHANTILLONS)
-                && ((($valeur * (1 - TOLERANCE)) <= $valeur) && ($valeur <= (1 + TOLERANCE)))
+            $rejouer = (
+                (
+                    ($nbPartieJouees >= MAX_ECHANTILLONS)
+                    || ($nbCoup === NB_COUP_MINIMAL_JOUEUR_2_GAGNE)
+                )
+                && (
+                    ((TOLERANCE >= 0.0) && (TOLERANCE <= 1.0))
+                    && (
+                        (($valeur * (1.0 - TOLERANCE)) <= $valeur)
+                        && ($valeur <= (1.0 + TOLERANCE))
+                    )
+                )
             ) ? 'N' : 'O';
-        }
+        } while ($rejouer == 'O');
         // Fr: Tant que le joueur 2 ne gagne pas recommencer sinon quitter
         // En: While player 2 lose a game retry, otherwise quit
     } while ($rejouer != 'N');

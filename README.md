@@ -53,7 +53,6 @@ des fonctionnalités cachées. ;-)
 > MODES DE JEU :
 
 - aleatoire
-- web
 - importer
 - default
 
@@ -66,14 +65,33 @@ MODE_DE_JEU=aleatoire php puissance4.php
 
 ```
 
-> GAME MODE : web
-> Fr : Affichage en mode web pas encore implémenté
+> MODE DE JEU : aleatoire TOLERANCE=0.0
+> Fr : Tolérance 0.0 : Le joueur 2 est censé gagner TOUTES les parties jouées.
 
 ```
 
-MODE_DE_JEU=web php puissance4.php
+MODE_DE_JEU=aleatoire TOLERANCE=0.0 php puissance4.php
 
 ```
+
+> MODE DE JEU : aleatoire MAX_ECHANTILLONS=24
+> Fr : Le joueur 2 va éssayer de gagner jusqu'à maximum (MAX_ECHANTILLONS) parties (ici 24)
+
+```
+
+MODE_DE_JEU=aleatoire MAX_ECHANTILLONS=24 php puissance4.php
+
+```
+
+> MODE DE JEU : aleatoire MAX_ECHANTILLONS=8 TOLERANCE=0.0
+> Fr : On peut combiner plusieurs options en mode aléatoire
+
+```
+
+MODE_DE_JEU=aleatoire MAX_ECHANTILLONS=8 TOLERANCE=0.0 php puissance4.php
+
+```
+
 
 > GAME MODE : importer
 > Fr : Importer votre grille de jeu
@@ -127,12 +145,11 @@ This will execute the cli game mode. For more game modes I invite you to read th
 > GAME MODES
 
 - aleatoire
-- web
 - importer
 - default
 
 > GAME MODE : aleatoire
-> En: Supervised learning algo to maximise player 2 winning the game in Connect 4 in minimum plies possible
+> En: Supervised learning algo to maximize player 2 winning the game in Connect 4 in minimum plies possible
 
 ```
 
@@ -140,14 +157,33 @@ MODE_DE_JEU=aleatoire php puissance4.php
 
 ```
 
-> GAME MODE : web
-> En: Render in a web page not implemented yet
+> MODE DE JEU : aleatoire TOLERANCE=0.0
+> En : Tolerance 0.0 : The player 2 should win ALL games played.
 
 ```
 
-MODE_DE_JEU=web php puissance4.php
+MODE_DE_JEU=aleatoire TOLERANCE=0.0 php puissance4.php
 
 ```
+
+> MODE DE JEU : aleatoire MAX_ECHANTILLONS=24
+> En : The player 2 tries to win until reaching maximum of (MAX_ECHANTILLONS) games played (here 24)
+
+```
+
+MODE_DE_JEU=aleatoire MAX_ECHANTILLONS=24 php puissance4.php
+
+```
+
+> MODE DE JEU : aleatoire MAX_ECHANTILLONS=8 TOLERANCE=0.0
+> En : You can combine multiple options in this game mode
+
+```
+
+MODE_DE_JEU=aleatoire MAX_ECHANTILLONS=8 TOLERANCE=0.0 php puissance4.php
+
+```
+
 
 > GAME MODE : importer
 > En: Import your game board data
